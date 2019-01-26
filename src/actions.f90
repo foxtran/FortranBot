@@ -9,7 +9,8 @@ contains
         character(len=:), allocatable              :: default, packages, fullfile, stat, MESSID
         integer :: ind1, ind2, lenpack, lendata
         MESSID = MESSIDinp
-        if(len(MESSIDinp).gt.9) MESSID = MESSIDinp(1:9)
+        if(len(MESSIDinp).gt.8) MESSID = MESSIDinp(1:8)
+        print *, MESSID
         call LatexDefault(default)
         call getPackages(ID, MESSID, packages)
         call writeLog(ID, MESSID, LATEX)
@@ -252,14 +253,14 @@ contains
         integer(4)                                :: stat
         write (suserid, "(I12)") userid
         write (scommand, "(I12)") command
-        call checkFiles(suserid, supdateid)
+        call checkFiles(suserid, supdateid(1:7))
         error = ""
         key = ""
         if(command.le.-2) then
             key = "Something went wrong"
             resulttype = 0
         else if(command.eq.-1) then
-            call inputlatex(suserid, trim(supdateid), inputtext, key, error)
+            call inputlatex(suserid, trim(supdateid(1:7)), inputtext, key, error)
             if(index(key, 'png').eq.0) then
                 resulttype = 0
                 key = key // '.log'
@@ -287,8 +288,8 @@ contains
             call answerInlineQuery(inline_query_id=trim(supdateid), results=result, is_personal=.true., status=stat)
             print *, text, supdateid, suserid
         end if
-        call writelog(suserid, supdateid, scommand)
-        call writelog(suserid, supdateid, inputtext)
-        call writelog(suserid, supdateid, key)
+        call writelog(suserid, supdateid(1:7), scommand)
+        call writelog(suserid, supdateid(1:7), inputtext)
+        call writelog(suserid, supdateid(1:7), key)
     end subroutine
 end module

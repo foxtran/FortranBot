@@ -1,0 +1,50 @@
+#MPIDIR     = /usr/lib64/mpich-3.2/bin/
+MPIDIR     = /usr/lib64/openmpi/bin/
+
+FCMPI      = $(MPIDIR)mpifort
+FC         = gfortran
+CC         = gcc
+FLAGS      = "-std=f2008 -ffree-line-length-none -fbackslash"
+EXE        = inline
+CHECKRANGE = -fno-range-check
+OPTHASH    = -O3
+OPT        = -O2
+
+MPIRUN     = $(MPIDIR)mpiexec
+NPROC      = 11
+#FOR RUNNING WITH OPENMPI
+MPIPROC    = --oversubscribe -np $(NPROC)
+#FOR RUNNING WITH MPICH
+#MPIPROC    = -np $(NPROC)
+ZIP        = zip
+
+VERSION    = 0.00
+
+PROXY      = 
+BOTKEY     = #BOT KEY
+BOTURL     = #BOT IP OR BOT URL
+
+
+default:
+	rm -rf build || true
+	mkdir build
+	cp ./src/* ./build/
+	time $(MAKE) -C build default FC=$(FCMPI) CC=$(CC) EXE=$(EXE) FLAGS=$(FLAGS) CHECKRANGE=$(CHECKRANGE) OPTHASH=$(OPTHASH) OPT=$(OPT) PROXY=$(PROXY) BOTKEY=$(BOTKEY) VERSION=$(VERSION) URLBOT=$(BOTURL)
+	rm -rf ./build
+	$(MAKE) zip
+	$(MPIRUN) $(MPIPROC) ./$(EXE)
+
+test:
+	rm -rf build || true
+	mkdir build
+	cp ./src/* ./build/
+	$(MAKE) -C build test FC=$(FC) EXE=$(EXE) FLAGS=$(FLAGS) CHECKRANGE=$(CHECKRANGE) OPTHASH=$(OPTHASH) OPT=$(OPT)
+	rm -rf ./build
+	./$(EXE)
+
+zip:
+	rm -f $(EXE)_v$(VERSION).zip || true
+	zip $(EXE)_v$(VERSION).zip Makefile.example *.tex ./src ./libs -r9
+
+run:
+	$(MPIRUN) $(MPIPROC) ./$(EXE)

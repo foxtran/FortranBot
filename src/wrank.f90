@@ -20,9 +20,9 @@ contains
         offset = 0
         do
             if(offset.le.0) then
-                call getUpdates(str, timeout=60, status=res)
+                call getUpdates(str, timeout=30, status=res)
             else
-                call getUpdates(str, offset=offset, timeout=60, status=res)
+                call getUpdates(str, offset=offset, timeout=30, status=res)
             end if
             if(res.eq.0.and.len(trim(str)).ne.0) then
                 str = adjustl(trim(str))
@@ -159,7 +159,7 @@ contains
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 900, COMM_SENDERGROUP, canget, status, ierr)
                 if (canget.eqv..FALSE.) then
-                    call msleep(100)
+                    call msleep(50)
                 end if
             end do
             call MPI_RECV(mpimess, MAXLENGTH+64, MPI_CHAR, 0, 900, COMM_SENDERGROUP, status, ierr)
@@ -202,7 +202,7 @@ contains
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 700, COMM_WORKERGROUP, canget, status, ierr)
                 if (canget.eqv..FALSE.) then
-                    call msleep(10)
+                    call msleep(50)
                 end if
             end do
             call MPI_RECV(mpimess, MAXLENGTH+64, MPI_CHAR, 0, 700, COMM_WORKERGROUP, status, ierr)
@@ -252,7 +252,7 @@ contains
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 720, COMM_INLINEGROUP, canget, status, ierr)
                 if (canget.eqv..FALSE.) then
-                    call msleep(100)
+                    call msleep(10)
                 end if
             end do
             print *, "TEST"

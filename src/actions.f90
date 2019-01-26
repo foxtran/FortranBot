@@ -1,16 +1,13 @@
 module actions
     implicit none
 contains
-    subroutine inputLaTeX(ID, MESSIDinp, LATEX, filenm, strerr)
+    subroutine inputLaTeX(ID, MESSID, LATEX, filenm, strerr)
         use wfile, only : latexdefault, writelog, savelatex, generatelatex
         implicit none
         character(len=:), allocatable, intent(out) :: filenm, strerr
-        character(len=*),              intent(in)  :: ID,      MESSIDinp,   LATEX
-        character(len=:), allocatable              :: default, packages, fullfile, stat, MESSID
+        character(len=*),              intent(in)  :: ID,      MESSID,   LATEX
+        character(len=:), allocatable              :: default, packages, fullfile, stat
         integer :: ind1, ind2, lenpack, lendata
-        MESSID = MESSIDinp
-        if(len(MESSIDinp).gt.8) MESSID = MESSIDinp(1:8)
-        print *, MESSID
         call LatexDefault(default)
         call getPackages(ID, MESSID, packages)
         call writeLog(ID, MESSID, LATEX)

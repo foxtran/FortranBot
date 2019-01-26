@@ -64,7 +64,6 @@ contains
                 parse = parse // CHAR(ICHAR(this), u)
             end if
         end do
-        print *, parse
         asciitoutf8 = parse
     end function
 

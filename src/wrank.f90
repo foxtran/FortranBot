@@ -50,11 +50,12 @@ contains
         integer, intent(in) :: COMM_WORKERGROUP, COMM_INLINEGROUP
         integer :: length
         integer :: status(MPI_STATUS_SIZE)
-        character(len=:), allocatable :: strinp
-        character(len=CHARBUFFERSIZE) :: charbuffer = REPEAT(" ", CHARBUFFERSIZE)
-        integer(4), allocatable       :: updateid(:), userid(:), mode(:), command(:)
-        integer(4)                    :: lenans
-        character(len=MAXLENGTH)      :: text
+        character(len=:), allocatable  :: strinp
+        character(len=CHARBUFFERSIZE)  :: charbuffer = REPEAT(" ", CHARBUFFERSIZE)
+        integer(4),        allocatable :: userid(:), mode(:), command(:)
+        character(len=40), allocatable :: supdateid(:)
+        integer(4)                     :: lenans
+        character(len=MAXLENGTH)       :: text
         character(len=MAXLENGTH), allocatable :: atext(:)
         !mpi_message
         character(len=MAXLENGTH+64) :: mpimess
@@ -74,7 +75,7 @@ contains
             canget = .FALSE.
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 599, MPI_COMM_WORLD, canget, status, ierr)
-                 if (canget.eqv..FALSE.) then
+                if (canget.eqv..FALSE.) then
                     call msleep(10)
                 end if
             end do
@@ -88,16 +89,15 @@ contains
                     strinp = strinp // trim(charbuffer)
                 end if
             end do
-            call parse(strinp, atext, userid, updateid, mode, command)
+            call parse(strinp, atext, userid, supdateid, mode, command)
             lenans = size(userid)
             if(lenans.gt.0) print *, "rank1: ", strinp
             do i = 1, lenans
-                print *, updateid(i), userid(i), command(i), trim(atext(i))
+                print *, supdateid(i), userid(i), command(i), trim(atext(i))
                 text = REPEAT(" ", MAXLENGTH)
                 text = atext(i)
                 mpimess = REPEAT(" ", MAXLENGTH+36)
-                write (convert40, "(I40)") updateid(i)
-                mpimess( 1:40) = convert40
+                mpimess( 1:40) = supdateid(i)
                 write (convert, "(I12)") userid(i)
                 mpimess(41:52) = convert
                 write (convert, "(I12)") command(i)
@@ -129,7 +129,7 @@ contains
             canget = .FALSE.
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(MPI_ANY_SOURCE, 800, MPI_COMM_WORLD, canget, status, ierr)
-                 if (canget.eqv..FALSE.) then
+                if (canget.eqv..FALSE.) then
                     call msleep(4)
                 end if
             end do
@@ -158,8 +158,8 @@ contains
             canget = .FALSE.
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 900, COMM_SENDERGROUP, canget, status, ierr)
-                 if (canget.eqv..FALSE.) then
-                    call msleep(4)
+                if (canget.eqv..FALSE.) then
+                    call msleep(100)
                 end if
             end do
             call MPI_RECV(mpimess, MAXLENGTH+64, MPI_CHAR, 0, 900, COMM_SENDERGROUP, status, ierr)
@@ -168,7 +168,6 @@ contains
             read(mpimess(53:64), '(I12)') error
             read(mpimess(65:  ), '(A)')   charbuffer
             text = trim(charbuffer)
-            print *, trim(adjustl(mpimess))
             call send(userid, resulttype, text, res)
             error = error + 1
             if(res.ne.0.and.error.le.10) then
@@ -202,7 +201,7 @@ contains
             canget = .FALSE.
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 700, COMM_WORKERGROUP, canget, status, ierr)
-                 if (canget.eqv..FALSE.) then
+                if (canget.eqv..FALSE.) then
                     call msleep(10)
                 end if
             end do
@@ -249,13 +248,14 @@ contains
         integer(1)                    :: buffer(MPIBUFFERSIZE)
         call MPI_BUFFER_ATTACH(buffer, MPIBUFFERSIZE, ierr)
         do
-            canget = .TRUE.
+            canget = .FALSE.
             do while (canget.neqv..TRUE.)
                 call MPI_IPROBE(0, 720, COMM_INLINEGROUP, canget, status, ierr)
-                 if (canget.eqv..FALSE.) then
-                    call msleep(10)
+                if (canget.eqv..FALSE.) then
+                    call msleep(100)
                 end if
             end do
+            print *, "TEST"
             call MPI_RECV(mpimess, MAXLENGTH+64, MPI_CHAR, 0, 720, COMM_INLINEGROUP, status, ierr)
             supdateid = mpimess( 1:40)
             read(mpimess(41:52), '(I12)') userid
